@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Immutable;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
+
+using ICsi.Roslyn;
 
 using static System.Console;
 
@@ -11,29 +12,29 @@ namespace ICsi
 {
     internal static class Program
     {
-        private static void WriteDiagnostic(Diagnostic diagnostic)
+        private static void ReportDiagnostics(ImmutableArray<Diagnostic> diagnostics)
         {
-            if (diagnostic.Severity == DiagnosticSeverity.Error)
-                ForegroundColor = ConsoleColor.DarkRed;
-            else if (diagnostic.Severity == DiagnosticSeverity.Warning)
-                ForegroundColor = ConsoleColor.Yellow;
-            else
-                ForegroundColor = ConsoleColor.DarkGray;
+            foreach (Diagnostic diagnostic in diagnostics)
+            {
+                if (diagnostic.Severity == DiagnosticSeverity.Error)
+                    ForegroundColor = ConsoleColor.DarkRed;
+                else if (diagnostic.Severity == DiagnosticSeverity.Warning)
+                    ForegroundColor = ConsoleColor.Yellow;
+                else
+                    ForegroundColor = ConsoleColor.DarkGray;
             
-            WriteLine(diagnostic);
-            ResetColor();
+                WriteLine(diagnostic);
+                ResetColor();
+            }
         }
 
         private static void Main(string[] args)
         {
-            ScriptState state = null;
+            var engineOptions = ScriptEngineOptions.Default;
+            var engine = new SimpleScriptEngine(engineOptions);
             var parseOptions = CSharpParseOptions.Default
-                                                 .WithLanguageVersion(LanguageVersion.Latest)
+                                                 .WithLanguageVersion(engineOptions.Version)
                                                  .WithKind(SourceCodeKind.Script);
-            var scriptOptions = ScriptOptions.Default
-                                             .WithLanguageVersion(LanguageVersion.Latest)
-                                             .WithWarningLevel(1)
-                                             .WithAllowUnsafe(true);
             
             bool IsComplete(string submission)
             {
@@ -56,22 +57,14 @@ namespace ICsi
 
                 try
                 {
-                    if (state == null)
-                        state = CSharpScript.RunAsync(code, scriptOptions)
-                                                .GetAwaiter()
-                                                .GetResult();
-                    else
-                        state = state.ContinueWithAsync(code, scriptOptions)
-                                         .GetAwaiter()
-                                         .GetResult();
-                        
-                    WriteLine(state.ReturnValue);
-                }
+                    ScriptResult result = engine.Run(code);
 
-                catch (CompilationErrorException cex)
-                {
-                    foreach (Diagnostic diag in cex.Diagnostics)
-                        WriteDiagnostic(diag);
+                    if (result.CompilationException != null)
+                        ReportDiagnostics(result.CompilationException.Diagnostics);
+                    else if (result.ExecutionException != null)
+                        WriteLine($"{result.ExecutionException.GetType()} = {result.ExecutionException.Message}");
+                    else
+                        WriteLine(result.ReturnValue);
                 }
 
                 catch (Exception ex)
