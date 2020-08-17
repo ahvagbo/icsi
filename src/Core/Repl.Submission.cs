@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 
+using ICsi.SyntaxHighlighting;
+
 namespace ICsi.Core
 {
     internal sealed partial class Repl
@@ -132,7 +134,7 @@ namespace ICsi.Core
             _done = false;
 
             var document = new ObservableCollection<string>() { "" };
-            var view = new SubmissionView(RenderLine, document);
+            var view = new SubmissionView(CSharpSyntaxHighlighter.RenderLine, document);
 
             while (!_done)
             {
