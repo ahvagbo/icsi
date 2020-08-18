@@ -47,12 +47,12 @@ namespace ICsi.Core
 
                 foreach (var line in _submissionDocument)
                 {
-                    if (_cursorTop + lineCount >= Console.WindowHeight)
+                    if (_cursorTop + lineCount == Console.WindowHeight)
                     {
                         Console.SetCursorPosition(0, Console.WindowHeight - 1);
                         Console.WriteLine();
-                        if (_cursorTop < 0)
-                            _cursorTop = Console.CursorTop;
+                        if (_cursorTop > 0)
+                            _cursorTop--;
                     }
 
                     Console.SetCursorPosition(0, _cursorTop + lineCount);
@@ -118,14 +118,6 @@ namespace ICsi.Core
                     }
                 }
             }
-        }
-
-        private object? RenderLine(IReadOnlyList<string> document,
-                                int lineIndex,
-                                object? state)
-        {
-            Console.Write(document[lineIndex]);
-            return state;
         }
 
         private bool _done;
