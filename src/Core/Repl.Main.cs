@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using ICsi.Roslyn;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 using static System.Console;
 
@@ -15,11 +14,14 @@ namespace ICsi.Core
     {
         private readonly IList<string> _history;
         private int _historyIndex;
+        private SimpleScriptEngine _scriptEngine;
 
         internal Repl()
         {
             _history = new List<string>();
             _historyIndex = 0;
+            _scriptEngine = new SimpleScriptEngine(ScriptEngineOptions.Default);
+            RegisterMetaCommands();
         }
 
         private  void ReportDiagnostics(ImmutableArray<Diagnostic> diagnostics)
@@ -38,32 +40,36 @@ namespace ICsi.Core
             }
         }
 
+        private void ExecuteSubmission(string code)
+        {
+            try
+            {
+                ScriptResult result = _scriptEngine.Run(code);
+
+                if (result.CompilationException != null)
+                    ReportDiagnostics(result.CompilationException.Diagnostics);
+                else if (result.ExecutionException != null)
+                    WriteLine($"{result.ExecutionException.GetType()} = {result.ExecutionException.Message}");
+                else
+                    WriteLine(result.ReturnValue);
+            }
+
+            catch (Exception ex)
+            {
+                WriteLine($"{ex.GetType()}: {ex.Message}");
+            }
+        }
+
         public void Run()
         {
-            var engineOptions = ScriptEngineOptions.Default;
-            var engine = new SimpleScriptEngine(engineOptions);
-            var parseOptions = CSharpParseOptions.Default
-                                                 .WithLanguageVersion(engineOptions.Version)
-                                                 .WithKind(SourceCodeKind.Script);
             while (true)
             {
                 string code = EditSubmission();
-                try
-                {
-                    ScriptResult result = engine.Run(code);
-
-                    if (result.CompilationException != null)
-                        ReportDiagnostics(result.CompilationException.Diagnostics);
-                    else if (result.ExecutionException != null)
-                        WriteLine($"{result.ExecutionException.GetType()} = {result.ExecutionException.Message}");
-                    else
-                        WriteLine(result.ReturnValue);
-                }
-
-                catch (Exception ex)
-                {
-                    WriteLine($"{ex.GetType()}: {ex.Message}");
-                }
+                
+                if (code.StartsWith(".") && !code.Contains(Environment.NewLine))
+                    ExecuteCommand(code);
+                else
+                    ExecuteSubmission(code);
                 
                 _history.Add(code);
                 _historyIndex = 0;
