@@ -2,6 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
+#if DEBUG
+using System.Linq;
+using System.Diagnostics;
+#endif
+
 using ICsi.Roslyn;
 
 using Microsoft.CodeAnalysis;
@@ -26,6 +31,13 @@ namespace ICsi.Core
 
         private  void ReportDiagnostics(ImmutableArray<Diagnostic> diagnostics)
         {
+#if DEBUG
+            int errors = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Error).Count();
+            int warnings = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Warning).Count();
+            int infos = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Info).Count();
+            Debug.WriteLine($"Report: Diagnostics found in the code - {errors} errors, {warnings} warnings and {infos} informations.");
+#endif
+
             foreach (Diagnostic diagnostic in diagnostics)
             {
                 if (diagnostic.Severity == DiagnosticSeverity.Error)
@@ -62,6 +74,9 @@ namespace ICsi.Core
 
         public void Run()
         {
+#if DEBUG
+            Debug.WriteLine("Starting the REPL...");
+#endif
             while (true)
             {
                 string code = EditSubmission();
