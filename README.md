@@ -8,8 +8,9 @@ ICsi is a new REPL (read-eval-print-loop) designed to run C# code. It supports o
 Requirements:
 
 * .NET Core 3.1 LTS or newer (you can also use the latest preview of .NET 5 if you want)
-* Visual Studio 2019 (optional)
-* Git
+* Visual Studio 2019 (optional, but it is important for debugging)
+* Git (latest version)
+* PowerShell Core (on both Windows and Linux)
 
 
 1. Clone the repository using Git:
@@ -17,16 +18,24 @@ Requirements:
 git clone https://github.com/iurie5100/icsi.git
 ```
 
-2. Use .NET Core CLI to restore and build the project.
+2. Use the build script to:
+* Restore:
 ```
-dotnet restore
-dotnet build ICsi.sln
+.\build.ps1 -target restore
 ```
 
-3. Run ICsi using:
+* Build:
 ```
-dotnet run --project .\src\icsi.csproj
+.\build.ps1 -target build
 ```
+
+* Clean (if needed):
+```
+.\build.ps1 -target clean
+```
+There is also a option to specify the build configuration by using -configuration along with the target.
+
+3. Now open artifacts, then there will be a folder named Debug or Release (depending on the build configuration) which is where the binaries are built.
 
 ## Using ICsi
 Using ICsi is just as easy as using any other REPL. You just type in some C# code, press ENTER and you're good to go. Use the PageUp and PageDown keys to load previous code.
@@ -49,6 +58,9 @@ Using ICsi is just as easy as using any other REPL. You just type in some C# cod
 
 > 
 ```
+
+## Contributing
+Want to contribute? Fork this repository and send a pull request with your changes.
 
 ## License
 ICsi is licensed under the MIT License.
