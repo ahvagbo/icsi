@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+#if DEBUG
+using System.Diagnostics;
+#endif
+
 namespace ICsi.Core
 {
     internal sealed partial class Repl
@@ -16,18 +20,30 @@ namespace ICsi.Core
             [ReplMetaCommand(".cls", "Clears the screen")]
             public static void ClsCommand()
             {
+#if DEBUG
+                Debug.WriteLine("Executing .cls command");
+#endif
+
                 Console.Clear();
             }
 
             [ReplMetaCommand(".quit", "Exits the REPL")]
             public static void QuitCommand()
             {
+#if DEBUG
+                Debug.WriteLine("Quitting the REPL");
+#endif
+
                 Environment.Exit(0);
             }
 
             [ReplMetaCommand(".help", "Prints this help message")]
             public static void HelpCommand()
             {
+#if DEBUG
+                Debug.WriteLine("Printing help");
+#endif
+
                 Console.WriteLine("Keys:");
                 Console.WriteLine("PageUp      Loads previous submission");
                 Console.WriteLine("PageDown    Loads next submission");
@@ -66,6 +82,10 @@ namespace ICsi.Core
         {
             _commands = new Dictionary<string, MethodInfo>();
 
+#if DEBUG
+            Debug.WriteLine("Initializing REPL meta commands...");
+#endif
+
             MethodInfo[] methods = typeof(ReplCommands).GetMethods(BindingFlags.Public
                                                                  | BindingFlags.Static);
             
@@ -82,10 +102,18 @@ namespace ICsi.Core
 
         private void ExecuteCommand(string command)
         {
+#if DEBUG
+            Debug.WriteLine("Executing command: " + command);
+#endif
+
             if (_commands.ContainsKey(command))
                 _commands[command].Invoke(null, new object[0]);
             else
             {
+#if DEBUG
+                Debug.WriteLine("Command execution failed: Unrecognized.");
+#endif
+
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.Error.WriteLine($"Unrecognized command: {command}. Type .help to know which commands are available.");
                 Console.ResetColor();
