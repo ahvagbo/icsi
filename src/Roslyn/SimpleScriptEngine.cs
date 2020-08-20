@@ -2,7 +2,10 @@
 
 using System;
 
-using Microsoft.CodeAnalysis;
+#if DEBUG
+using System.Diagnostics;
+#endif
+
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 
@@ -31,6 +34,10 @@ namespace ICsi.Roslyn
                                                  .WithAllowUnsafe(Options.AllowUnsafe)
                                                  .WithWarningLevel(Options.WarningLevel);
 
+#if DEBUG
+            Debug.WriteLine("Starting script execution...");
+#endif
+
             try
             {
                 if (_state == null)
@@ -44,10 +51,18 @@ namespace ICsi.Roslyn
                 
                 returnValue = _state.ReturnValue;
                 eex = _state.Exception;
+
+#if DEBUG
+                Debug.WriteLine("Script run with success.");
+#endif
             }
 
             catch (CompilationErrorException ex)
             {
+#if DEBUG
+                Debug.WriteLine("Script compilation failed.");
+#endif
+
                 cex = ex;
             }
 
