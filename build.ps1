@@ -1,8 +1,25 @@
+<#
+.SYNOPSIS
+    ICsi Build Script
+.DESCRIPTION
+    The build script for ICsi
+.PARAMETER target
+    The build target. Available values are: default, restore, build, clean.
+.PARAMTER configuration
+    The build configurations. The only values available are: Debug and Release.
+.NOTES
+    Author: Iurie Jurja
+    License: MIT License
+    Date: 20.08.2020
+.EXAMPLE
+    .\build.ps1 -target build -configuration Release
+#>
+
 param([string] $target = "default",
       [string] $configuration = "Debug")
 
 function Clean {
-    [System.IO.Directory]::Delete("${pwd}\\artifacts\\${configuration}", $true)
+    dotnet clean ICsi.sln --configuration $configuration --output .\artifacts\$configuration
 }
 
 function Restore {
@@ -10,7 +27,7 @@ function Restore {
 }
 
 function Build {
-    dotnet build ICsi.sln --configuration $configuration --output .\artifacts\$configuration
+    dotnet build ICsi.sln --configuration $configuration --output .\artifacts\$configuration --no-restore
 }
 
 if ($target -eq "default") {
@@ -23,5 +40,5 @@ if ($target -eq "default") {
 } elseif ($target -eq "build") {
     Build
 } else {
-    Write-Host "Unrecognized target: ${target}"
+    Write-Host "Unrecognized target: ${target}. Specify the -showHelp 1 command to know which targets are available"
 }
