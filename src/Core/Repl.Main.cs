@@ -23,12 +23,11 @@ namespace ICsi.Core
 
         internal Repl(ReplConfiguration config)
         {
-            ScriptEngineOptions options = ScriptEngineOptions.Default
-                                                             .WithVersion(config.Version)
-                                                             .WithWarningLevel(config.WarningLevel)
-                                                             .WithAllowUnsafe(config.AllowUnsafe);
-            options.AddReferences(config.References);
-            options.AddImports(config.Imports);
+            ScriptEngineOptions options = new ScriptEngineOptions(config.Version,
+                                                                  config.WarningLevel,
+                                                                  config.AllowUnsafe,
+                                                                  config.Imports,
+                                                                  config.References);
             _history = new List<string>();
             _historyIndex = 0;
             _scriptEngine = new SimpleScriptEngine(options);
