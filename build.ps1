@@ -18,6 +18,9 @@
 param([string] $target = "default",
       [string] $configuration = "Debug")
 
+$buildNumber = [System.DateTime]::Now.ToString("MMdd")
+$version = "1.0.${buildNumber}"
+
 function Clean {
     dotnet clean ICsi.sln --configuration $configuration --output .\artifacts\$configuration
 }
@@ -27,7 +30,7 @@ function Restore {
 }
 
 function Build {
-    dotnet build ICsi.sln --configuration $configuration --output .\artifacts\$configuration --no-restore
+    dotnet build ICsi.sln --configuration $configuration --output .\artifacts\$configuration --no-restore /p:Version=$version
 }
 
 if ($target -eq "default") {
@@ -40,5 +43,5 @@ if ($target -eq "default") {
 } elseif ($target -eq "build") {
     Build
 } else {
-    Write-Host "Unrecognized target: ${target}. Specify the -showHelp 1 command to know which targets are available"
+    Write-Host "Unrecognized target: ${target}"
 }
