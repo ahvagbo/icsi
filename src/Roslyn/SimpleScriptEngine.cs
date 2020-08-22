@@ -1,11 +1,13 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 
 #if DEBUG
 using System.Diagnostics;
 #endif
 
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 
@@ -29,10 +31,18 @@ namespace ICsi.Roslyn
             CompilationErrorException? cex = null;
             Exception? eex = null;
 
+            IEnumerable<MetadataReference> GetReferences()
+            {
+                foreach (string reference in Options.References)
+                    yield return MetadataReference.CreateFromFile(reference);
+            }
+
             ScriptOptions options = ScriptOptions.Default
                                                  .WithLanguageVersion(Options.Version)
                                                  .WithAllowUnsafe(Options.AllowUnsafe)
-                                                 .WithWarningLevel(Options.WarningLevel);
+                                                 .WithWarningLevel(Options.WarningLevel)
+                                                 .AddReferences(GetReferences())
+                                                 .AddImports(Options.Imports);
 
 #if DEBUG
             Debug.WriteLine("Starting script execution...");

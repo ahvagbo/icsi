@@ -21,11 +21,17 @@ namespace ICsi.Core
         private int _historyIndex;
         private SimpleScriptEngine _scriptEngine;
 
-        internal Repl()
+        internal Repl(ReplConfiguration config)
         {
+            ScriptEngineOptions options = new ScriptEngineOptions(config.Version,
+                                                                  config.WarningLevel,
+                                                                  config.AllowUnsafe,
+                                                                  config.Imports,
+                                                                  config.References);
             _history = new List<string>();
             _historyIndex = 0;
-            _scriptEngine = new SimpleScriptEngine(ScriptEngineOptions.Default);
+            _scriptEngine = new SimpleScriptEngine(options);
+
             RegisterMetaCommands();
         }
 
