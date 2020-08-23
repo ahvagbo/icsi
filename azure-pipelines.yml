@@ -10,7 +10,6 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  version: '$(Year:yy).0.$(Date:MMdd)'
   solution: 'ICsi.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
@@ -21,6 +20,13 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
+
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '5.0'
+    includePreviewVersions: true
+    performMultiLevelLookup: true
 
 - task: PowerShell@2
   inputs:
