@@ -1,0 +1,44 @@
+# .NET
+# Build and test .NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: 'ICsi.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '5.x'
+    includePreviewVersions: true
+    performMultiLevelLookup: true
+
+- task: PowerShell@2
+  inputs:
+    filePath: '.\build.ps1'
+    arguments: '-target default -configuration $(buildConfiguration)'
+
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "Running sample #1"
+      .\artifacts\$(buildConfiguration)\ICsi.exe -i System.Console -i System.Math -e "WriteLine(Sqrt(1156))"
+      
+      Write-Host "Running sample #2"
+      .\artifacts\$(buildConfiguration)\ICsi.exe -e "System.Math.Pow(34, 2)"
