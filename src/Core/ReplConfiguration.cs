@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Collections.Generic;
 
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -9,14 +9,14 @@ namespace ICsi.Core
         public LanguageVersion Version { get; }
         public bool AllowUnsafe { get; }
         public int WarningLevel { get; }
-        public string[] Imports { get; }
-        public string[] References { get; }
+        public List<string> Imports { get; }
+        public List<string> References { get; }
 
         internal ReplConfiguration(LanguageVersion version,
                                    bool allowUnsafe,
                                    int warningLevel,
-                                   string[] imports,
-                                   string[] references)
+                                   List<string> imports,
+                                   List<string> references)
         {
             Version = version;
             AllowUnsafe = allowUnsafe;
@@ -29,8 +29,8 @@ namespace ICsi.Core
             => new ReplConfiguration(LanguageVersion.CSharp9,
                                      false,
                                      1,
-                                     new string[] {},
-                                     new string[] {});
+                                     new List<string> {},
+                                     new List<string> {});
 
         public ReplConfiguration WithLanguageVersion(LanguageVersion version)
             => new ReplConfiguration(version,
@@ -54,9 +54,9 @@ namespace ICsi.Core
                                      References);
         
         public void AddImports(string[] imports)
-            => Imports.ToList().AddRange(imports);
+            => Imports.AddRange(imports);
 
         public void AddReferences(string[] references)
-            => References.ToList().AddRange(references);
+            => References.AddRange(references);
     }
 }
