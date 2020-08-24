@@ -34,7 +34,7 @@ namespace ICsi.Roslyn
             IEnumerable<MetadataReference> GetReferences()
             {
                 foreach (string reference in Options.References)
-                    yield return MetadataReference.CreateFromFile(reference);
+                    yield return MetadataReference.CreateFromFile(reference, new MetadataReferenceProperties());
             }
 
             ScriptOptions options = ScriptOptions.Default
