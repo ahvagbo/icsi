@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Immutable;
 
 #if DEBUG
@@ -18,6 +19,10 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace ICsi.Core
 {
+    [Command("ICsi", UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.StopParsingAndCollect,
+                     AllowArgumentSeparator = true)]
+    [HelpOption("--help | -h | -?")]
+    [VersionOptionFromMember("--version | -ver", MemberName = "GetVersion")]
     internal sealed class Application
     {
         private string? _version = "9.0";
@@ -26,26 +31,35 @@ namespace ICsi.Core
         private string[]? _imports = new string[] {};
         private string[]? _references = new string[] {};
 
-        [Option("--script", "Executes a given script file", CommandOptionType.SingleValue)]
+        private static string GetVersion()
+        {
+            Assembly asm = Assembly.GetExecutingAssembly();
+            Version? ver = asm.GetName().Version;
+            return $"ICsi version {ver}";
+        }
+
+        [Option("--script <SCRIPT_FILE>", "Executes a given script file", CommandOptionType.SingleValue)]
         public string? ScriptFile { get; }
 
-        [Option("--eval | -e", "Executes a given code snippet", CommandOptionType.SingleValue)]
+        [Option("--eval | -e <CODE_SNIPPET>", "Executes a given code snippet", CommandOptionType.SingleValue)]
         public string? Eval { get; }
 
-        [Option("--langversion | -langver", "Specifies the C# version", CommandOptionType.SingleValue)]
+        [Option("--langversion | -langver <VERSION>", "Specifies the C# version", CommandOptionType.SingleValue)]
         public string? LangVersion { get => _version; private set => _version = value; }
 
-        [Option("--unsafe", "Specifies whether unsafe blocks are allowed or not", CommandOptionType.SingleValue)]
+        [Option("--unsafe <TRUE_OR_FALSE>", "Specifies whether unsafe blocks are allowed or not", CommandOptionType.SingleValue)]
         public bool AllowUnsafe { get => _allowUnsafe; private set => _allowUnsafe = value; }
 
-        [Option("--warninglevel | -warn", "Specifies the warning level", CommandOptionType.SingleValue)]
+        [Option("--warninglevel | -warn <WARN_LEVEL>", "Specifies the warning level", CommandOptionType.SingleValue)]
         public int WarningLevel { get => _warningLevel; private set => _warningLevel = value; }
         
-        [Option("--imports | -i", "Imports a namespace", CommandOptionType.MultipleValue)]
+        [Option("--imports | -i <NAMESPACE>", "Imports a namespace", CommandOptionType.MultipleValue)]
         public string[]? Imports { get => _imports; private set => _imports = value; }
 
-        [Option("--reference | -r", "References a metadata file", CommandOptionType.MultipleValue)]
+        [Option("--reference | -r <METADATA_FILE>", "References a metadata file", CommandOptionType.MultipleValue)]
         public string[]? References { get => _references; private set => _references = value; }
+
+        public string[]? RemainingArguments { get; }
 
         private  void ReportDiagnostics(ImmutableArray<Diagnostic> diagnostics)
         {
@@ -67,6 +81,33 @@ namespace ICsi.Core
             
                 Console.WriteLine(diagnostic);
                 Console.ResetColor();
+            }
+        }
+
+        private void ExecuteFile(string fileName, string[] args, ScriptEngineOptions options)
+        {
+            try
+            {
+                if (!File.Exists(fileName))
+                    Console.Error.WriteLine($"File {fileName} does not exist.");
+                else if (Path.GetExtension(fileName) != ".csx")
+                    Console.Error.WriteLine($"File {fileName} is not a CSX file.");
+                else
+                {
+                    string fileContent = File.ReadAllText(fileName);
+                    var scriptEngine = new SimpleScriptEngine(options);
+                    ScriptResult result = scriptEngine.Run(fileContent);
+
+                    if (result.CompilationException != null)
+                        ReportDiagnostics(result.CompilationException.Diagnostics);
+                    else if (result.ExecutionException != null)
+                        Console.WriteLine($"{result.ExecutionException.GetType()} = {result.ExecutionException.Message}");
+                    Console.WriteLine(result.ReturnValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.GetType()}: {ex.Message}");
             }
         }
 
@@ -94,21 +135,15 @@ namespace ICsi.Core
             if (!LanguageVersionFacts.TryParse(LangVersion, out var version))
                 Console.Error.WriteLine($"Unrecognized version: {version}");
             
-            var engineOptions = new ScriptEngineOptions(version,
-                                                        WarningLevel,
-                                                        AllowUnsafe,
-                                                        Imports,
-                                                        References);
+            var engineOptions = ScriptEngineOptions.Default.WithVersion(version)
+                                                           .WithAllowUnsafe(AllowUnsafe)
+                                                           .WithWarningLevel(WarningLevel);
+            engineOptions.AddImports(Imports);
+            engineOptions.AddReferences(References);
 
             if (ScriptFile != null)
             {
-                if (!File.Exists(ScriptFile))
-                    Console.Error.WriteLine($"File {ScriptFile} does not exist");
-                else
-                {
-                    string fileContent = File.ReadAllText(ScriptFile);
-                    Execute(fileContent, engineOptions);
-                }
+                ExecuteFile(ScriptFile, RemainingArguments!, engineOptions);
             }
 
             else if (Eval != null)
@@ -121,8 +156,8 @@ namespace ICsi.Core
                 ReplConfiguration config = new ReplConfiguration(version,
                                                                  AllowUnsafe,
                                                                  WarningLevel,
-                                                                 Imports,
-                                                                 References);
+                                                                 Imports.ToList(),
+                                                                 References.ToList());
                 Repl repl = new Repl(config);
                 repl.Run();
             }
