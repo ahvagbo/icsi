@@ -18,9 +18,6 @@
 param([string] $target = "default",
       [string] $configuration = "Debug")
 
-$buildNumber = [System.DateTime]::Now.ToString("MMdd")
-$version = "1.0.${buildNumber}"
-
 function Clean {
     dotnet clean ICsi.sln --configuration $configuration --output .\artifacts\$configuration
 }
@@ -30,7 +27,7 @@ function Restore {
 }
 
 function Build {
-    dotnet build ICsi.sln --configuration $configuration --output .\artifacts\$configuration --no-restore /p:Version=$version
+    dotnet build ICsi.sln --configuration $configuration --output .\artifacts\$configuration --no-restore
 }
 
 if ($target -eq "default") {
