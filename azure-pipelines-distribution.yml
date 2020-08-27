@@ -40,12 +40,12 @@ steps:
     packageType: 'sdk'
     version: '5.x'
     includePreviewVersions: true
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
-    restoreSolution: '$(solution)'
+    projects: '$(solution)'
     feedsToUse: 'select'
-    vstsFeed: '59b590e9-2bcb-4978-8b35-d9b32574125f/4ff0a8a8-641b-4043-a547-991467ec24e5'
+    verbosityRestore: 'Diagnostic'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
