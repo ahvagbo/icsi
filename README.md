@@ -1,7 +1,28 @@
 # ICsi
-### Currently, ICsi is not quite stable. Use it at your own risk.
 
 ICsi is a new REPL (read-eval-print-loop) designed to run C# code. It supports only .NET Core 3.1 and newer versions.
+
+## How can i install ICsi?
+To install ICsi, you will need the following:
+* .NET Core 3.1 LTS or newer
+* Windows 7 (or newer) or Linux (any distribution supported by .NET Core)
+
+Open PowerShell in Windows (or bash in Linux), and type the following:
+```
+dotnet tool install ICsi --add-source https://pkgs.dev.azure.com/ijurja/ICsi/_packaging/ICsiFeed/nuget/v3/index.json
+```
+Notice the --add-source option. It is very important, because ICsi is not published in nuget.org, but rather in its own package feed.
+
+After ICsi has installed, type in the command line:
+```
+ICsi
+```
+or:
+```
+.\ICsi
+```
+
+It depends if you installed the tool locally, globally or inside a specific path.
 
 ## Building and running
 
