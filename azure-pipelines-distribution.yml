@@ -54,18 +54,18 @@ steps:
     arguments: '--no-restore --configuration $(buildConfiguration) --verbosity diagnostic /p:Version=$(icsiVersion)'
     zipAfterPublish: false
     modifyOutputPath: false
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
     packagesToPack: 'src/ICsi.csproj'
+    nobuild: true
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'icsiVersion'
-    toolPackage: true
-- task: NuGetCommand@2
+    verbosityPack: 'Diagnostic'
+- task: DotNetCoreCLI@2
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg;!$(Build.ArtifactStagingDirectory)/*.symbols.nupkg'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     nuGetFeedType: 'internal'
     publishVstsFeed: '59b590e9-2bcb-4978-8b35-d9b32574125f/4ff0a8a8-641b-4043-a547-991467ec24e5'
     publishPackageMetadata: false
-    allowPackageConflicts: true
