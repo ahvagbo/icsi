@@ -62,11 +62,10 @@ steps:
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'icsiVersion'
     verbosityPack: 'Diagnostic'
-- task: DotNetCoreCLI@2
+- task: NuGetCommand@2
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     nuGetFeedType: 'internal'
     publishVstsFeed: '59b590e9-2bcb-4978-8b35-d9b32574125f/4ff0a8a8-641b-4043-a547-991467ec24e5'
-    publishPackageMetadata: false
-    arguments: '--skip-duplicate'
+    allowPackageConflicts: true
