@@ -1,0 +1,71 @@
+# This file is required for distributing ICsi.
+
+name: 'ICsi_$(SourceBranchName)_$(Date:ddMMyyyy)'
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+- name: solution
+  value: 'ICsi.sln'
+- name: buildConfiguration
+  value: 'Release'
+- name: icsiVersion
+  value: '$(Major).$(Minor).$(BuildNumber).$(Revision)'
+
+steps:
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "Setting build number..."
+      
+      $baseDate = [datetime]"01/01/2000"
+      $currentDate = $(Get-Date) # -format ddMMyyyy-Hmmss
+      $timeSpan = New-TimeSpan -Start $baseDate -End $currentDate
+      $days = $timeSpan.Days
+      
+      Write-Host "##vso[task.setVariable variable=BuildNumber]$days"
+- task: NuGetToolInstaller@1
+  inputs:
+    versionSpec: '5.x'
+- task: NuGetAuthenticate@0
+  inputs:
+    forceReinstallCredentialProvider: true
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '5.x'
+    includePreviewVersions: true
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: '$(solution)'
+    feedsToUse: 'select'
+    verbosityRestore: 'Diagnostic'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '$(solution)'
+    arguments: '--no-restore --configuration $(buildConfiguration) --verbosity diagnostic /p:Version=$(icsiVersion)'
+    zipAfterPublish: false
+    modifyOutputPath: false
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    packagesToPack: 'src/ICsi.csproj'
+    nobuild: true
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'icsiVersion'
+    verbosityPack: 'Diagnostic'
+- task: NuGetCommand@2
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: '59b590e9-2bcb-4978-8b35-d9b32574125f/4ff0a8a8-641b-4043-a547-991467ec24e5'
+    allowPackageConflicts: true
