@@ -5,6 +5,20 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <AssemblyName>ICsi</AssemblyName>
+
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>ICsi</ToolCommandName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>ICsi</PackageId>
+    <Authors>iurie5100</Authors>
+    <Description>
+      A REPL (read-eval-print-loop) designed to run C# code.
+    </Description>
+    <PackageTags>
+      roslyn;c#;csharp;dotnet;icsi
+    </PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
