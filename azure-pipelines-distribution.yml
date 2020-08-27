@@ -1,6 +1,6 @@
 # This file is required for distributing ICsi.
 
-name: 'ICsi_$(SourceBranchName)_$(icsiVersion)'
+name: 'ICsi_$(SourceBranchName)_$(Date:ddMMyyyy)'
 
 trigger:
 - master
