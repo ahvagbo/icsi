@@ -19,47 +19,21 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace ICsi.Core
 {
-    [Command("ICsi", UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.StopParsingAndCollect,
-                     AllowArgumentSeparator = true)]
-    [HelpOption("--help | -h | -?")]
-    [VersionOptionFromMember("--version | -ver", MemberName = "GetVersion")]
     internal sealed class Application
     {
-        private string? _version = "9.0";
-        private bool _allowUnsafe = false;
-        private int _warningLevel = 1;
-        private string[]? _imports = new string[] {};
-        private string[]? _references = new string[] {};
-
-        private static string GetVersion()
+        private string GetLongFormVersion()
         {
             Assembly asm = Assembly.GetExecutingAssembly();
             Version? ver = asm.GetName().Version;
             return $"ICsi version {ver}";
         }
 
-        [Option("--script <SCRIPT_FILE>", "Executes a given script file", CommandOptionType.SingleValue)]
-        public string? ScriptFile { get; }
-
-        [Option("--eval | -e <CODE_SNIPPET>", "Executes a given code snippet", CommandOptionType.SingleValue)]
-        public string? Eval { get; }
-
-        [Option("--langversion | -langver <VERSION>", "Specifies the C# version", CommandOptionType.SingleValue)]
-        public string? LangVersion { get => _version; private set => _version = value; }
-
-        [Option("--unsafe <TRUE_OR_FALSE>", "Specifies whether unsafe blocks are allowed or not", CommandOptionType.SingleValue)]
-        public bool AllowUnsafe { get => _allowUnsafe; private set => _allowUnsafe = value; }
-
-        [Option("--warninglevel | -warn <WARN_LEVEL>", "Specifies the warning level", CommandOptionType.SingleValue)]
-        public int WarningLevel { get => _warningLevel; private set => _warningLevel = value; }
-        
-        [Option("--imports | -i <NAMESPACE>", "Imports a namespace", CommandOptionType.MultipleValue)]
-        public string[]? Imports { get => _imports; private set => _imports = value; }
-
-        [Option("--reference | -r <METADATA_FILE>", "References a metadata file", CommandOptionType.MultipleValue)]
-        public string[]? References { get => _references; private set => _references = value; }
-
-        public string[]? RemainingArguments { get; }
+        private string GetShortFormVersion()
+        {
+            Assembly asm = Assembly.GetExecutingAssembly();
+            Version? ver = asm.GetName().Version;
+            return $"{ver}";
+        }
 
         private  void ReportDiagnostics(ImmutableArray<Diagnostic> diagnostics)
         {
@@ -130,37 +104,77 @@ namespace ICsi.Core
             }
         }
 
-        public void OnExecute()
+        public int Run(string[] args)
         {
-            if (!LanguageVersionFacts.TryParse(LangVersion, out var version))
-                Console.Error.WriteLine($"Unrecognized version: {version}");
+            var app = new CommandLineApplication()
+            {
+                Name = "ICsi",
+                Description = "A REPL (read-eval-print-loop) made to run C# code",
+                ResponseFileHandling = ResponseFileHandling.ParseArgsAsLineSeparated,
+                AllowArgumentSeparator = true,
+                UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.StopParsingAndCollect
+            };
+
+            var scriptFile = app.Option<string>("--script <SCRIPT_FILE>",
+                                                "Executes a given script file",
+                                                CommandOptionType.SingleValue);
+            var eval = app.Option<string>("--eval | -e <CODE_SNIPPET>",
+                                          "Executes a given code snippet",
+                                          CommandOptionType.SingleValue);
             
-            var engineOptions = ScriptEngineOptions.Default.WithVersion(version)
-                                                           .WithAllowUnsafe(AllowUnsafe)
-                                                           .WithWarningLevel(WarningLevel);
-            engineOptions.AddImports(Imports);
-            engineOptions.AddReferences(References);
+            var langVersion = app.Option<string>("--langversion | -langver <VERSION>",
+                                                 "Specifies the C# version",
+                                                 CommandOptionType.SingleValue);
+            var allowUnsafe = app.Option<bool>("--unsafe[:<TRUE_OR_FALSE>]",
+                                               "Specifies whether unsafe blocks are allowed or not",
+                                               CommandOptionType.SingleOrNoValue);
+            var warningLevel = app.Option<int>("--warninglevel | -warn <WARN_LEVEL>",
+                                               "Specifies the warning level",
+                                               CommandOptionType.SingleValue);
+            var imports = app.Option<string>("--imports | -i",
+                                             "Imports a namespace or adds a static import",
+                                             CommandOptionType.MultipleValue);
+            var reference = app.Option<string>("--reference | -r",
+                                               "References a metadata file",
+                                               CommandOptionType.MultipleValue);
 
-            if (ScriptFile != null)
-            {
-                ExecuteFile(ScriptFile, RemainingArguments!, engineOptions);
-            }
+            app.HelpOption("--help | -h | -?");
+            app.VersionOption("--version | -ver",
+                              GetShortFormVersion(),
+                              GetLongFormVersion());
+            
+            app.OnExecute(() => {
+                if (!LanguageVersionFacts.TryParse(langVersion.Value(), out var version))
+                    Console.Error.WriteLine($"Unrecognied version: {langVersion.Value()}");
+                
+                var engineOptions = ScriptEngineOptions.Default.WithVersion(version)
+                                                           .WithAllowUnsafe(allowUnsafe.ParsedValue)
+                                                           .WithWarningLevel(warningLevel.ParsedValue);
+                engineOptions.AddImports(imports.Values.ToArray());
+                engineOptions.AddReferences(reference.Values.ToArray());
 
-            else if (Eval != null)
-            {
-                Execute(Eval, engineOptions);
-            }
+                if (scriptFile.HasValue())
+                    ExecuteFile(scriptFile.ParsedValue,
+                                app.RemainingArguments.ToArray(),
+                                engineOptions);
+                
+                else if (eval.HasValue())
+                    Execute(eval.ParsedValue,
+                            engineOptions);
 
-            else
-            {
-                ReplConfiguration config = new ReplConfiguration(version,
-                                                                 AllowUnsafe,
-                                                                 WarningLevel,
-                                                                 Imports.ToList(),
-                                                                 References.ToList());
-                Repl repl = new Repl(config);
-                repl.Run();
-            }
+                else
+                {
+                    var replConfiguration = new ReplConfiguration(version,
+                                                                  allowUnsafe.ParsedValue,
+                                                                  warningLevel.ParsedValue,
+                                                                  imports.Values.ToList(),
+                                                                  reference.Values.ToList());
+                    var repl = new Repl(replConfiguration);
+                    repl.Run();
+                }
+            });
+
+            return app.Execute(args);
         }
     }
 }
