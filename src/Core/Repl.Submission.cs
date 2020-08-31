@@ -120,13 +120,26 @@ namespace ICsi.Core
             }
         }
 
+        private object? RenderLine(IReadOnlyList<string> submission,
+                                   int lineIndex,
+                                   object? state)
+        {
+            Console.Write(submission[lineIndex]);
+            return state;
+        }
+
         private bool _done;
         private string EditSubmission()
         {
             _done = false;
 
             var document = new ObservableCollection<string>() { "" };
-            var view = new SubmissionView(CSharpSyntaxHighlighter.RenderLine, document);
+            SubmissionView view;
+
+            if (_enableSyntaxHighlighting)
+                view = new SubmissionView(CSharpSyntaxHighlighter.RenderLine, document);
+            else
+                view = new SubmissionView(RenderLine, document);
 
             while (!_done)
             {
