@@ -20,6 +20,7 @@ namespace ICsi.Core
         private readonly IList<string> _history;
         private int _historyIndex;
         private SimpleScriptEngine _scriptEngine;
+        private bool _enableSyntaxHighlighting;
 
         internal Repl(ReplConfiguration config)
         {
@@ -31,6 +32,7 @@ namespace ICsi.Core
             _history = new List<string>();
             _historyIndex = 0;
             _scriptEngine = new SimpleScriptEngine(options);
+            _enableSyntaxHighlighting = config.EnableSyntaxHighlighting;
 
             RegisterMetaCommands();
         }

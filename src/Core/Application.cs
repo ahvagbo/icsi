@@ -137,6 +137,9 @@ namespace ICsi.Core
             var reference = app.Option<string>("--reference | -r",
                                                "References a metadata file",
                                                CommandOptionType.MultipleValue);
+            var enableSyntaxHighlighting = app.Option<bool>("--enable-syntaxhighlighting",
+                                                            "Specifies whether syntax highlighting is enabled or not. Applies for REPL only.",
+                                                            CommandOptionType.SingleValue);
 
             app.HelpOption("--help | -h | -?");
             app.VersionOption("--version | -ver",
@@ -145,7 +148,7 @@ namespace ICsi.Core
             
             app.OnExecute(() => {
                 if (!LanguageVersionFacts.TryParse(langVersion.Value(), out var version))
-                    Console.Error.WriteLine($"Unrecognied version: {langVersion.Value()}");
+                    Console.Error.WriteLine($"Unrecognized version: {langVersion.Value()}");
                 
                 var engineOptions = ScriptEngineOptions.Default.WithVersion(version)
                                                            .WithAllowUnsafe(allowUnsafe.ParsedValue)
@@ -167,8 +170,9 @@ namespace ICsi.Core
                     var replConfiguration = new ReplConfiguration(version,
                                                                   allowUnsafe.ParsedValue,
                                                                   warningLevel.ParsedValue,
-                                                                  imports.Values.ToList(),
-                                                                  reference.Values.ToList());
+                                                                  imports.ParsedValues.ToList(),
+                                                                  reference.ParsedValues.ToList(),
+                                                                  enableSyntaxHighlighting.ParsedValue);
                     var repl = new Repl(replConfiguration);
                     repl.Run();
                 }
