@@ -21,6 +21,7 @@ namespace ICsi.Core
         private int _historyIndex;
         private SimpleScriptEngine _scriptEngine;
         private bool _enableSyntaxHighlighting;
+        private bool _enableSyntaxVisualizer;
 
         internal Repl(ReplConfiguration config)
         {
@@ -33,6 +34,7 @@ namespace ICsi.Core
             _historyIndex = 0;
             _scriptEngine = new SimpleScriptEngine(options);
             _enableSyntaxHighlighting = config.EnableSyntaxHighlighting;
+            _enableSyntaxVisualizer = false;
 
             RegisterMetaCommands();
         }
@@ -92,7 +94,15 @@ namespace ICsi.Core
                 if (code.StartsWith(".") && !code.Contains(Environment.NewLine))
                     ExecuteCommand(code);
                 else
+                {
                     ExecuteSubmission(code);
+                    
+                    if (_enableSyntaxVisualizer)
+                    {
+                        Console.WriteLine();
+                        CSharpSyntaxVisualizer.PrettyPrint(code, _scriptEngine.Options.Version);
+                    }
+                }
                 
                 _history.Add(code);
                 _historyIndex = 0;
