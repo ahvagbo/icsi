@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 #if DEBUG
@@ -15,65 +14,63 @@ namespace ICsi.Core
     {
         private IDictionary<string, MethodInfo> _commands;
 
-        private static class ReplCommands
+        [ReplMetaCommand(".cls", "Clears the screen")]
+        private void ClsCommand()
         {
-            [ReplMetaCommand(".cls", "Clears the screen")]
-            public static void ClsCommand()
-            {
 #if DEBUG
-                Debug.WriteLine("Executing .cls command");
+            Debug.WriteLine("Executing .cls command");
 #endif
 
-                Console.Clear();
-            }
+            Console.Clear();
+        }
 
-            [ReplMetaCommand(".quit", "Exits the REPL")]
-            public static void QuitCommand()
-            {
+        [ReplMetaCommand(".quit", "Exits the REPL")]
+        private void QuitCommand()
+        {
 #if DEBUG
-                Debug.WriteLine("Quitting the REPL");
+            Debug.WriteLine("Quitting the REPL");
 #endif
 
-                Environment.Exit(0);
-            }
+            Environment.Exit(0);
+        }
 
-            [ReplMetaCommand(".help", "Prints this help message")]
-            public static void HelpCommand()
-            {
+        [ReplMetaCommand(".help", "Prints this help message")]
+        private void HelpCommand()
+        {
 #if DEBUG
-                Debug.WriteLine("Printing help");
+            Debug.WriteLine("Printing help");
 #endif
 
-                Console.WriteLine("Keys:");
-                Console.WriteLine("PageUp      Loads previous submission");
-                Console.WriteLine("PageDown    Loads next submission");
-                Console.WriteLine("Enter       Executes the given submission");
-                Console.WriteLine("Ctrl+Enter  Inserts a new line");
-                Console.WriteLine("Arrows      Browse through the code");
+            Console.WriteLine("Keys:");
+            Console.WriteLine("PageUp      Loads previous submission");
+            Console.WriteLine("PageDown    Loads next submission");
+            Console.WriteLine("Enter       Executes the given submission");
+            Console.WriteLine("Ctrl+Enter  Inserts a new line");
+            Console.WriteLine("Arrows      Browse through the code");
 
-                Console.WriteLine();
+            Console.WriteLine();
 
-                Console.WriteLine("C#-specific directives:");
-                Console.WriteLine("#r\tReferences a metadata file");
-                Console.WriteLine("#load\tLoads a C# script");
+            Console.WriteLine("C#-specific directives:");
+            Console.WriteLine("#r\tReferences a metadata file");
+            Console.WriteLine("#load\tLoads a C# script");
 
-                Console.WriteLine();
+            Console.WriteLine();
 
-                IEnumerable<MethodInfo> methods = from m in (typeof(ReplCommands).GetMethods(BindingFlags.Public
-                                                                                           | BindingFlags.Static)).AsEnumerable()
-                                                  where m.GetCustomAttribute(typeof(ReplMetaCommandAttribute)) != null
-                                                  select m;
+            IEnumerable<MethodInfo> methods = GetType().GetMethods(BindingFlags.NonPublic
+                                                                 | BindingFlags.Instance);
                 
-                IEnumerable<ReplMetaCommandAttribute> GetCommands()
+            IEnumerable<ReplMetaCommandAttribute> GetCommands()
+            {
+                foreach (MethodInfo method in methods)
                 {
-                    foreach (MethodInfo method in methods)
-                    {
-                        yield return (ReplMetaCommandAttribute)method.GetCustomAttribute(typeof(ReplMetaCommandAttribute))!;
-                    }
+                    yield return (ReplMetaCommandAttribute)method.GetCustomAttribute(typeof(ReplMetaCommandAttribute))!;
                 }
+            }
 
-                Console.WriteLine("REPL-specific commands");
-                foreach (ReplMetaCommandAttribute command in GetCommands())
+            Console.WriteLine("REPL-specific commands");
+            foreach (ReplMetaCommandAttribute command in GetCommands())
+            {
+                if (command != null)
                     Console.WriteLine($"{command.Command}\t{command.Description}");
             }
         }
@@ -86,17 +83,15 @@ namespace ICsi.Core
             Debug.WriteLine("Initializing REPL meta commands...");
 #endif
 
-            MethodInfo[] methods = typeof(ReplCommands).GetMethods(BindingFlags.Public
-                                                                 | BindingFlags.Static);
+            MethodInfo[] methods = GetType().GetMethods(BindingFlags.NonPublic
+                                                      | BindingFlags.Instance);
             
             foreach (MethodInfo method in methods)
             {
                 var attribute = (ReplMetaCommandAttribute)method.GetCustomAttribute(typeof(ReplMetaCommandAttribute))!;
 
-                if (attribute == null)
-                    continue;
-                
-                _commands.Add(attribute.Command, method);
+                if (attribute != null)
+                    _commands.Add(attribute.Command, method);
             }
         }
 
@@ -107,7 +102,7 @@ namespace ICsi.Core
 #endif
 
             if (_commands.ContainsKey(command))
-                _commands[command].Invoke(null, new object[0]);
+                _commands[command].Invoke(this, new object[0]);
             else
             {
 #if DEBUG

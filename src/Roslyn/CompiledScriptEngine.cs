@@ -19,6 +19,7 @@ namespace ICsi.Roslyn
         private Script<object> _script;
 
         public ScriptEngineOptions Options { get; }
+        public ScriptState State { get => null; }
 
         public CompiledScriptEngine(ScriptEngineOptions options)
         {
