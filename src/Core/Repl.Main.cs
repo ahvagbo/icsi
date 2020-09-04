@@ -92,7 +92,11 @@ namespace ICsi.Core
                 if (code.StartsWith(".") && !code.Contains(Environment.NewLine))
                     ExecuteCommand(code);
                 else
+                {
                     ExecuteSubmission(code);
+                    Console.WriteLine();
+                    CSharpSyntaxVisualizer.PrettyPrint(code, _scriptEngine.Options.Version);
+                }
                 
                 _history.Add(code);
                 _historyIndex = 0;
