@@ -18,6 +18,7 @@ namespace ICsi.Roslyn
         private ScriptState? _state;
 
         public ScriptEngineOptions Options { get; }
+        public ScriptState? State { get => _state; }
 
         internal SimpleScriptEngine(ScriptEngineOptions options)
         {
