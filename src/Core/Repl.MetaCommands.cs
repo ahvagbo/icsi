@@ -34,6 +34,30 @@ namespace ICsi.Core
             Environment.Exit(0);
         }
 
+        [ReplMetaCommand(".tree", "Enables/disables Syntax Visualizer")]
+        private void TreeCommand()
+        {
+            if (_enableSyntaxVisualizer)
+            {
+#if DEBUG
+                Debug.WriteLine("Disabling Syntax Visualizer...");
+#endif
+
+                _enableSyntaxVisualizer = false;
+                Console.WriteLine("Disabled Syntax Visualizer");
+            }
+            
+            else
+            {
+#if DEBUG
+                Debug.WriteLine("Enabling Syntax Visualizer...");
+#endif
+
+                _enableSyntaxVisualizer = true;
+                Console.WriteLine("Enabled Syntax Visualizer");
+            }
+        }
+
         [ReplMetaCommand(".help", "Prints this help message")]
         private void HelpCommand()
         {
