@@ -125,7 +125,7 @@ namespace ICsi.Core
             var langVersion = app.Option<string>("--langversion | -langver <VERSION>",
                                                  "Specifies the C# version",
                                                  CommandOptionType.SingleValue);
-            var allowUnsafe = app.Option<bool>("--unsafe[:<TRUE_OR_FALSE>]",
+            var allowUnsafe = app.Option<bool>("--unsafe:<TRUE_OR_FALSE>",
                                                "Specifies whether unsafe blocks are allowed or not",
                                                CommandOptionType.SingleOrNoValue);
             var warningLevel = app.Option<int>("--warninglevel | -warn <WARN_LEVEL>",
@@ -137,9 +137,9 @@ namespace ICsi.Core
             var reference = app.Option<string>("--reference | -r",
                                                "References a metadata file",
                                                CommandOptionType.MultipleValue);
-            var enableSyntaxHighlighting = app.Option<bool>("--enable-syntaxhighlighting",
+            var enableSyntaxHighlighting = app.Option<bool>("--enable-syntaxhighlighting:<TRUE_OR_FALSE>",
                                                             "Specifies whether syntax highlighting is enabled or not. Applies for REPL only.",
-                                                            CommandOptionType.SingleValue);
+                                                            CommandOptionType.SingleOrNoValue);
 
             app.HelpOption("--help | -h | -?");
             app.VersionOption("--version | -ver",
