@@ -50,7 +50,8 @@ namespace ICsi.Core
                     if (_cursorTop + lineCount == Console.WindowHeight)
                     {
                         Console.SetCursorPosition(0, Console.WindowHeight - 1);
-                        Console.WriteLine();
+                        if (lineCount > 1)
+                            Console.WriteLine();
                         if (_cursorTop > 0)
                             _cursorTop--;
                     }
