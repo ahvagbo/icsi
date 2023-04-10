@@ -38,8 +38,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '5.x'
-    includePreviewVersions: true
+    useGlobalJson: true
 - task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
