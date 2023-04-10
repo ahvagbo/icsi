@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 
     <AssemblyName>ICsi</AssemblyName>
 
@@ -19,7 +19,19 @@
     <PackageTags>
       roslyn;c#;csharp;dotnet;icsi
     </PackageTags>
+    <Copyright>Copyright (C) 2023 Iurie Jurja</Copyright>
+    <RepositoryUrl>https://github.com/iurie5100/icsi</RepositoryUrl>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
