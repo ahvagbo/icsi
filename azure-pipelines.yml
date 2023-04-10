@@ -24,7 +24,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '5.x'
+    version: '7.x'
     includePreviewVersions: true
     performMultiLevelLookup: true
 
