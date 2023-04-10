@@ -1,11 +1,11 @@
 # ICsi
 
-ICsi is a new REPL (read-eval-print-loop) designed to run C# code. It supports only .NET Core 3.1 and newer versions.
+ICsi is a new REPL (read-eval-print-loop) designed to run C# code. It supports only .NET 7.0 and newer versions.
 
 ## How can i install ICsi?
 To install ICsi, you will need the following:
-* .NET Core 3.1 LTS or newer
-* Windows 7 (or newer) or Linux (any distribution supported by .NET Core)
+* .NET 7 or newer
+* Windows 10 (or 11) or Linux (any distribution supported by .NET)
 
 Open PowerShell in Windows (or bash in Linux), and type the following:
 ```
@@ -28,8 +28,8 @@ It depends if you installed the tool locally, globally or inside a specific path
 
 Requirements:
 
-* .NET Core 3.1 LTS or newer (you can also use the latest preview of .NET 5 if you want)
-* Visual Studio 2019 (optional, but it is important for debugging)
+* .NET 7 (you can also use the latest preview of .NET 8 if you want)
+* Visual Studio 2022 (optional, but it is important for debugging)
 * Git (latest version)
 * PowerShell Core (on both Windows and Linux)
 
