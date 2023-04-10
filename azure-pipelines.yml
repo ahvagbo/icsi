@@ -24,8 +24,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '5.x'
-    includePreviewVersions: true
+    useGlobalJson: true
     performMultiLevelLookup: true
 
 - task: PowerShell@2
