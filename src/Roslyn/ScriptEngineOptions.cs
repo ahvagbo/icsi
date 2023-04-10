@@ -31,7 +31,7 @@ namespace ICsi.Roslyn
         }
 
         public static ScriptEngineOptions Default
-            => new ScriptEngineOptions(version: LanguageVersion.CSharp9,
+            => new ScriptEngineOptions(version: LanguageVersion.CSharp11,
                                        warningLevel: 1,
                                        allowUnsafe: false,
                                        new List<string> {},
